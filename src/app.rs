@@ -11,10 +11,15 @@ use ratatui::{
     widgets::{Block, Padding, Widget},
 };
 
-use crate::{components::Tab, config::KeyConfig, events::EventState};
+use crate::{
+    components::{Component, NewBackupComponent, Tab},
+    config::KeyConfig,
+    events::EventState,
+};
 
 pub struct App {
     tab: Tab,
+    new_backup: NewBackupComponent,
     pub key_config: KeyConfig,
 }
 
@@ -22,11 +27,21 @@ impl App {
     pub fn new(key_config: KeyConfig) -> Self {
         return Self {
             tab: Tab::MAIN,
+            new_backup: NewBackupComponent::new(key_config),
             key_config,
         };
     }
 
     pub async fn event(&mut self, key: KeyCode) -> anyhow::Result<EventState> {
+        if self.new_backup.event(key)?.is_consumed() {
+            return Ok(EventState::Consumed);
+        }
+
+        if key == self.key_config.new {
+            self.new_backup.visible = true;
+            return Ok(EventState::Consumed);
+        }
+
         return Ok(EventState::NotConsumed);
     }
 }
@@ -48,6 +63,11 @@ impl Widget for &App {
             .border_style(Color::Gray);
         let inner_area = block.inner(body_area);
         block.render(body_area, buf);
+
+        if self.new_backup.visible {
+            let popup_area = NewBackupComponent::area(inner_area);
+            self.new_backup.render(popup_area, buf);
+        }
 
         // render more
     }
