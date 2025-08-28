@@ -65,7 +65,7 @@ impl Widget for &App {
         block.render(body_area, buf);
 
         if self.new_backup.visible {
-            let popup_area = NewBackupComponent::area(inner_area);
+            let popup_area = NewBackupComponent::center_area(inner_area);
             self.new_backup.render(popup_area, buf);
         }
 

@@ -4,6 +4,7 @@ use crossterm::event::KeyCode;
 pub struct KeyConfig {
     pub quit: KeyCode,
     pub new: KeyCode,
+    pub confirm: KeyCode,
 }
 
 impl Default for KeyConfig {
@@ -11,6 +12,7 @@ impl Default for KeyConfig {
         Self {
             quit: KeyCode::Char('q'),
             new: KeyCode::Char('n'),
+            confirm: KeyCode::Enter,
         }
     }
 }
