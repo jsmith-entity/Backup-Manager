@@ -1,10 +1,8 @@
 use crossterm::event::KeyCode;
-
 use ratatui::{
-    layout::Flex,
     prelude::{
         Alignment, Buffer,
-        Constraint::{Length, Min, Percentage},
+        Constraint::{Length, Min},
         Layout, Rect, Stylize,
     },
     style::Color,
@@ -12,37 +10,31 @@ use ratatui::{
     widgets::{Block, Clear, Paragraph, Widget},
 };
 
-use crate::{KeyConfig, components::Component, events::EventState};
+use crate::{
+    EventState,
+    components::{BackupConfigComponent, Component, forms::TextField},
+    config::KeyConfig,
+};
 
-#[derive(Default, Clone, Copy)]
-pub struct NewBackupComponent {
+#[derive(Clone)]
+pub struct NewConfigFormComponent {
     pub visible: bool,
+    title: TextField,
     key_config: KeyConfig,
 }
 
-impl NewBackupComponent {
+impl NewConfigFormComponent {
     pub fn new(key_config: KeyConfig) -> Self {
         return Self {
             visible: false,
+            title: TextField::new(),
             key_config,
         };
     }
-
-    pub fn center_area(area: Rect) -> Rect {
-        let vertical = Layout::vertical([Percentage(50)]).flex(Flex::Center);
-        let horizontal = Layout::horizontal([Percentage(50)]).flex(Flex::Center);
-        let [area] = vertical.areas(area);
-        let [area] = horizontal.areas(area);
-        return area;
-    }
 }
 
-impl Component for NewBackupComponent {
+impl Component for NewConfigFormComponent {
     fn event(&mut self, key: KeyCode) -> anyhow::Result<EventState> {
-        if !self.visible {
-            return Ok(EventState::NotConsumed);
-        }
-
         if key == self.key_config.quit {
             self.visible = false;
             return Ok(EventState::Consumed);
@@ -51,16 +43,16 @@ impl Component for NewBackupComponent {
         if key == self.key_config.confirm {
             // push new backup
             // maybe rename this to just backups or something
+            //
             self.visible = false;
             return Ok(EventState::Consumed);
         }
 
         return Ok(EventState::NotConsumed);
     }
-}
 
-impl Widget for NewBackupComponent {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    fn render(&self, area: &[Rect], buf: &mut Buffer) {
+        let area = area[0];
         Clear.render(area, buf);
 
         let block = Block::bordered().title_top(Line::from("Create a New Backup").centered());
@@ -70,13 +62,19 @@ impl Widget for NewBackupComponent {
         let vertical = Layout::vertical([Min(0), Length(1)]);
         let [main_area, control_area] = vertical.areas(inner_area);
 
-        self.render_controls(control_area, buf);
+        self.render_popup_form(main_area, buf);
+        self.render_popup_controls(control_area, buf);
     }
 }
 
-impl NewBackupComponent {
-    fn render_controls(&self, area: Rect, buf: &mut Buffer) {
-        let centered_area = NewBackupComponent::center_area(area);
+impl NewConfigFormComponent {
+    fn render_popup_form(&self, area: Rect, buf: &mut Buffer) {
+        // title
+        // date
+    }
+
+    fn render_popup_controls(&self, area: Rect, buf: &mut Buffer) {
+        let centered_area = BackupConfigComponent::center_area(area);
         let horizontal = Layout::horizontal([Min(0), Length(1), Min(0)]);
         let [confirm_area, _, cancel_area] = horizontal.areas(centered_area);
 

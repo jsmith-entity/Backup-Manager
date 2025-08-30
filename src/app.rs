@@ -12,14 +12,14 @@ use ratatui::{
 };
 
 use crate::{
-    components::{Component, NewBackupComponent, Tab},
+    components::{BackupConfigComponent, Component, Tab},
     config::KeyConfig,
     events::EventState,
 };
 
 pub struct App {
     tab: Tab,
-    new_backup: NewBackupComponent,
+    backup_config: BackupConfigComponent,
     pub key_config: KeyConfig,
 }
 
@@ -27,18 +27,18 @@ impl App {
     pub fn new(key_config: KeyConfig) -> Self {
         return Self {
             tab: Tab::MAIN,
-            new_backup: NewBackupComponent::new(key_config),
+            backup_config: BackupConfigComponent::new(key_config),
             key_config,
         };
     }
 
     pub async fn event(&mut self, key: KeyCode) -> anyhow::Result<EventState> {
-        if self.new_backup.event(key)?.is_consumed() {
+        if self.backup_config.event(key)?.is_consumed() {
             return Ok(EventState::Consumed);
         }
 
         if key == self.key_config.new {
-            self.new_backup.visible = true;
+            self.backup_config.toggle_popup(true);
             return Ok(EventState::Consumed);
         }
 
@@ -51,8 +51,8 @@ impl Widget for &App {
         let vertical = Layout::vertical([Length(1), Min(0)]);
         let [header_area, body_area] = vertical.areas(area);
 
-        let horizontal = Layout::horizontal([Min(0), Length(20)]);
-        let [tabs_area, title_area] = horizontal.areas(header_area);
+        let header_horizontal = Layout::horizontal([Min(0), Length(20)]);
+        let [tabs_area, title_area] = header_horizontal.areas(header_area);
 
         self.tab.render(tabs_area, buf);
         Line::from("Backup Manager").bold().render(title_area, buf);
@@ -64,11 +64,11 @@ impl Widget for &App {
         let inner_area = block.inner(body_area);
         block.render(body_area, buf);
 
-        if self.new_backup.visible {
-            let popup_area = NewBackupComponent::center_area(inner_area);
-            self.new_backup.render(popup_area, buf);
-        }
+        let body_horizontal = Layout::horizontal([Min(0), Min(0), Min(0)]);
+        let [config_area, list_area, options_area] = body_horizontal.areas(inner_area);
 
-        // render more
+        self.backup_config.render(&[inner_area, config_area], buf);
+        Line::from("this is the backup list area").render(list_area, buf);
+        Line::from("this is the options area").render(options_area, buf);
     }
 }
