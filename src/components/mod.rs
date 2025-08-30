@@ -3,6 +3,7 @@ pub mod tab;
 
 mod forms;
 mod new_config_form;
+mod utils;
 
 use new_config_form::NewConfigFormComponent;
 

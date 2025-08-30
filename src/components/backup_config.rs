@@ -1,15 +1,14 @@
 use crossterm::event::KeyCode;
 
 use ratatui::{
-    layout::Flex,
-    prelude::{Buffer, Constraint::Percentage, Layout, Rect},
+    prelude::{Buffer, Constraint::Percentage, Rect},
     text::Line,
     widgets::{Block, Widget},
 };
 
 use crate::{
     KeyConfig,
-    components::{Component, NewConfigFormComponent},
+    components::{Component, NewConfigFormComponent, utils},
     events::EventState,
 };
 
@@ -26,14 +25,6 @@ impl BackupConfigComponent {
             new_config_popup: NewConfigFormComponent::new(key_config),
             key_config,
         };
-    }
-
-    pub fn center_area(area: Rect) -> Rect {
-        let vertical = Layout::vertical([Percentage(50)]).flex(Flex::Center);
-        let horizontal = Layout::horizontal([Percentage(50)]).flex(Flex::Center);
-        let [area] = vertical.areas(area);
-        let [area] = horizontal.areas(area);
-        return area;
     }
 
     pub fn toggle_popup(&mut self, visible: bool) {
@@ -60,7 +51,7 @@ impl Component for BackupConfigComponent {
         Line::from("this is the config list area").render(inner_area, buf);
 
         if self.new_config_popup.visible {
-            let popup_area = BackupConfigComponent::center_area(area[0]);
+            let popup_area = utils::center(area[0], Percentage(40), Percentage(70));
             self.new_config_popup.render(&[popup_area], buf);
         }
     }

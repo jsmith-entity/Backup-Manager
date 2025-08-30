@@ -2,6 +2,7 @@ use crossterm::event::KeyCode;
 use ratatui::{
     prelude::{
         Alignment, Buffer,
+        Constraint::Percentage,
         Constraint::{Length, Min},
         Layout, Rect, Stylize,
     },
@@ -12,14 +13,14 @@ use ratatui::{
 
 use crate::{
     EventState,
-    components::{BackupConfigComponent, Component, forms::TextField},
+    components::{BackupConfigComponent, Component, forms::TextField, utils},
     config::KeyConfig,
 };
 
 #[derive(Clone)]
 pub struct NewConfigFormComponent {
     pub visible: bool,
-    title: TextField,
+    config_name: TextField,
     key_config: KeyConfig,
 }
 
@@ -27,7 +28,7 @@ impl NewConfigFormComponent {
     pub fn new(key_config: KeyConfig) -> Self {
         return Self {
             visible: false,
-            title: TextField::new(),
+            config_name: TextField::new("title"),
             key_config,
         };
     }
@@ -69,12 +70,13 @@ impl Component for NewConfigFormComponent {
 
 impl NewConfigFormComponent {
     fn render_popup_form(&self, area: Rect, buf: &mut Buffer) {
-        // title
-        // date
+        let vertical = Layout::vertical([Length(3)]);
+        let [title_area] = vertical.areas(area);
+        self.config_name.render(&[title_area], buf);
     }
 
     fn render_popup_controls(&self, area: Rect, buf: &mut Buffer) {
-        let centered_area = BackupConfigComponent::center_area(area);
+        let centered_area = utils::center(area, Percentage(50), Percentage(50));
         let horizontal = Layout::horizontal([Min(0), Length(1), Min(0)]);
         let [confirm_area, _, cancel_area] = horizontal.areas(centered_area);
 
